@@ -1,5 +1,5 @@
 import {PlusOutlined} from '@ant-design/icons';
-import {Button, Drawer, message} from 'antd';
+import {Button, Descriptions, Drawer, message} from 'antd';
 import React, {useRef, useState} from 'react';
 import {PageContainer} from '@ant-design/pro-layout';
 import type {ActionType, ProColumns} from '@ant-design/pro-table';
@@ -8,7 +8,7 @@ import type {ProDescriptionsItemProps} from '@ant-design/pro-descriptions';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import type {FormValueType} from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-import {cloneConfigById, pageList, save, updateAppConfigStatus, updateRule} from './service';
+import {cloneConfigById, deleteConfig, pageList, save, updateAppConfigStatus, updateRule} from './service';
 import type {AppConfigEntity, TableListItem, TableListPagination} from './data';
 import type {ProFormInstance} from "@ant-design/pro-form";
 import {ModalForm, ProFormSelect, ProFormText} from "@ant-design/pro-form";
@@ -40,11 +40,14 @@ const TableList: React.FC = () => {
   /** 分布更新窗口的弹窗 */
 
   const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
+  const [deleteModalVisible, handleDeleteModalVisible] = useState<boolean>(false);
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<AppConfigEntity>();
   const [selectedRowsState, setSelectedRows] = useState<AppConfigEntity[]>([]);
   const [record, setRecord] = useState<AppConfigEntity>();
+
+
 
   const doOnline = async (param: number) => {
     const query = {
@@ -58,6 +61,17 @@ const TableList: React.FC = () => {
   }
 
   const formMapRef = useRef<React.MutableRefObject<ProFormInstance<any> | undefined>[]>([]);
+
+  const doDeleteConfig = async () => {
+    const param = record.id;
+    await deleteConfig(param);
+    if(actionRef.current) {
+      actionRef.current.reload()
+    }
+    handleDeleteModalVisible(false);
+    setCurrentRow(undefined);
+    setRecord(undefined);
+  }
 
   const doOffline = async (param: number) => {
     const query = {
@@ -79,6 +93,9 @@ const TableList: React.FC = () => {
     if(actionRef.current) {
         actionRef.current.reload();
     }
+    handleCloneModalVisible(false);
+    setCurrentRow(undefined);
+    setRecord(undefined);
   }
 
   const columns: ProColumns<AppConfigEntity>[] = [
@@ -160,7 +177,7 @@ const TableList: React.FC = () => {
         >
           下线
         </a>,
-         <a key="cloneConfig"
+       <a key="cloneConfig"
          onClick={() => {
            handleCloneModalVisible(true);
            setRecord(record);
@@ -168,6 +185,14 @@ const TableList: React.FC = () => {
        >
          克隆配置
        </a>,
+        <a key="deleteConfig"
+           onClick={() => {
+             handleDeleteModalVisible(true);
+             setRecord(record);
+           }}
+        >
+          删除
+        </a>,
       ],
     },
   ];
@@ -339,8 +364,34 @@ const TableList: React.FC = () => {
         }}
       >
           <ProFormText label='包名' rules={[{required: true, message: '请输入包名'}]} name={'pkg'}/>
-          <ProFormText label='渠道号' rules={[{required: true, message: '请输入渠道号'}]} name={'channel'}/>
+          <ProFormText label='渠道号' rules={[{required: true, message: '请输入渠道号'}]} name={'channelId'}/>
           <ProFormText label='产品名称（pn）' rules={[{required: true, message: '请输入产品名称'}]} name={'pn'}/>
+      </ModalForm>
+
+      <ModalForm
+        visible={deleteModalVisible}
+        onVisibleChange={handleDeleteModalVisible}
+        title="警告！!"
+        width="400px"
+        modalProps={{
+          destroyOnClose: true,
+          okText: '确认删除',
+          okButtonProps: {
+            danger: true
+          }
+        }}
+        onFinish={doDeleteConfig}
+        onReset={() => {
+          handleDeleteModalVisible(false);
+          setCurrentRow(undefined);
+          setRecord(undefined);
+        }}
+      >
+        你确认要删除么，该动作可能会影响对应渠道的正常运行，请确认无误后执行。
+        {/*<Descriptions title="User Info">*/}
+        {/*  <Descriptions.Item label="UserName">Zhou Maomao</Descriptions.Item>*/}
+        {/*</Descriptions>*/}
+        {/*<ProFormText label='你确认要删除么，该动作可能会影响对应渠道的正常运行，请确认无误后执行。'></ProFormText>*/}
       </ModalForm>
 
       <Drawer
@@ -366,16 +417,6 @@ const TableList: React.FC = () => {
           />
         )}
       </Drawer>
-
-      {/*<Popconfirm*/}
-      {/*  placement="top"*/}
-      {/*  title='确认更新状态么'*/}
-      {/*  onCancel={closePopConfirm}*/}
-      {/*  onConfirm={doOnline}*/}
-      {/*  okText="Yes"*/}
-      {/*  cancelText="No">*/}
-
-      {/*</Popconfirm>*/}
     </PageContainer>
   );
 };

@@ -17,6 +17,20 @@ export async function updateAppConfigStatus(
   })
 }
 
+export async function deleteConfig(
+  param: {
+    id?: number
+  }
+) {
+  return request<{
+  }>('/api/master/appConfig/delete', {
+    method: 'DELETE',
+    params: {
+      id: param,
+    }
+  })
+}
+
 export async function cloneConfigById(
   param: {
     id?: number;
