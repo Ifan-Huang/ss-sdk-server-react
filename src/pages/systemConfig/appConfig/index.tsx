@@ -154,15 +154,15 @@ const TableList: React.FC = () => {
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
-        <a
-          key="edit"
-          onClick={() => {
-            handleUpdateModalVisible(true);
-            setCurrentRow(record);
-          }}
-        >
-          编辑
-        </a>,
+        // <a
+        //   key="edit"
+        //   onClick={() => {
+        //     handleUpdateModalVisible(true);
+        //     setCurrentRow(record);
+        //   }}
+        // >
+        //   编辑
+        // </a>,
         <a key="online"
           onClick={() => {
             doOnline(record.id);
